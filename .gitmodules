@@ -1,3 +1,6 @@
 [submodule "third-party/xxHash"]
 	path = third-party/xxHash
 	url = https://github.com/Cyan4973/xxHash
+[submodule "third-party/kanon"]
+	path = third-party/kanon
+	url = https://github.com/Conzxy/kanon
