@@ -54,9 +54,12 @@ message(STATUS "BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 include_directories(${PROJECT_SOURCE_DIR})
 
 set(THIRD_PARTY_DIR ${PROJECT_SOURCE_DIR}/third-party)
-set(XXHASH_DIR ${THIRD_PARTY_DIR}/xxHash)
 
-set(MMKVC_SOURCE_DIR ${PROJECT_SOURCE_DIR}/mmkv)
+set(XXHASH_DIR ${THIRD_PARTY_DIR}/xxHash)
+set(KANON_DIR ${THIRD_PARTY_DIR}/kanon)
+set(MMKVC_SOURCE_DIR ${PROJECT_SOURCE_DIR}/mmkvc)
+
+include_directories(${KANON_DIR})
 
 # I don't want to use the builtin variable ${BUILD_SHARED_LIBS}
 # since it you don't set it to ON explicitly, then the NOT 
@@ -85,9 +88,18 @@ macro (GenLib lib)
   endif (${BUILD_STATIC_LIBS})
 endmacro ()
 
+macro (SetLibName var prefix)
+  if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    set(${var} ${prefix})
+  else ()
+    set(${var} "${prefix}_debug")
+  endif ()
+endmacro ()
+
 # message(STATUS "BUILD_SHARED_LIBS = ${BUILD_SHARED_LIBS}")
 message(STATUS "BUILD_ALL_TESTS = ${BUILD_ALL_TESTS}")
 message(STATUS "BUILD_ALL_EXAMPLES = ${BUILD_ALL_EXAMPLES}")
 
-add_subdirectory(mmkv)
+add_subdirectory(${THIRD_PARTY_DIR})
+add_subdirectory(mmkvc)
 add_subdirectory(test)
