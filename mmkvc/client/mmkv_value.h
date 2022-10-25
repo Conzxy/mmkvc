@@ -14,17 +14,16 @@ using protocol::StrKvs;
 using protocol::WeightValues;
 using protocol::Weight;
 
-struct MmkvValue;
-
-void SetValueFromResponse(MmkvValue &value, MmbpResponse &r);
-
 struct MmkvValue {
   class MmkvClient;
  public:
+  /**
+   * Allow default construct only
+   */
   MmkvValue()
     : type_(V_INVALID)
   {}
-  
+
   ~MmkvValue() noexcept;
   
   MmkvValue(MmkvValue const &rhs);
@@ -76,9 +75,9 @@ struct MmkvValue {
     return wvs;
   }
 
- private:
-  friend void SetValueFromResponse(MmkvValue &value, MmbpResponse &r);
+  void FromResponse(MmbpResponse &r);
 
+ private:
   enum ValueType : int {
     V_INVALID = 0,
     V_COUNT,

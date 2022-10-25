@@ -128,26 +128,26 @@ void MmkvValue::swap(MmkvValue &rhs) noexcept
   }
 }
 
-void SetValueFromResponse(MmkvValue &value, MmbpResponse &r) {
-  value.status_code_ = (StatusCode)r.status_code;
-  switch (value.type_) {
+void MmkvValue::FromResponse(MmbpResponse &r) {
+  status_code_ = (StatusCode)r.status_code;
+  switch (type_) {
     case MmkvValue::V_STR_VALUE:
-      value.value = std::move(r.value);
+      value = std::move(r.value);
       break;
     case MmkvValue::V_STR_VALUES:
-      value.values = std::move(r.values);
+      values = std::move(r.values);
       break;
     case MmkvValue::V_COUNT:
-      value.count = r.count;
+      count = r.count;
       break;
     case MmkvValue::V_WEIGHT:
-      value.weight = (double)r.count;
+      weight = (double)r.count;
       break;
     case MmkvValue::V_WEIGHT_VALUES:
-      value.wvs = r.vmembers;
+      wvs = r.vmembers;
       break;
     case MmkvValue::V_STR_KVS:
-      value.kvs = r.kvs;
+      kvs = r.kvs;
       break;
   }
 }
