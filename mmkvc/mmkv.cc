@@ -3,8 +3,9 @@
 
 using namespace kanon;
 
-int MmkvInit() {
-  Logger::SetLogLevel(Logger::INFO);
+int MmkvInit()
+{
+  Logger::SetLogLevel(Logger::KANON_LL_INFO);
   return 0;
 }
 

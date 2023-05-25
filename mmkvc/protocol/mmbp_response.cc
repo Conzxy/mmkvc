@@ -1,6 +1,7 @@
+// SPDX-LICENSE-IDENTIFIER: Apache-2.0
 #include "mmbp_response.h"
-#include "mmbp_util.h"
-#include "status_code.h"
+#include "mmkvc/protocol/mmbp_util.h"
+#include "mmkvc/protocol/status_code.h"
 
 #include <kanon/log/logger.h>
 
@@ -9,52 +10,74 @@ using namespace kanon;
 
 MmbpResponse MmbpResponse::prototype_;
 
-MmbpResponse::MmbpResponse() 
-  : status_code(-1) {
+MmbpResponse::MmbpResponse()
+  : status_code(-1)
+{
   ::memset(has_bits_, 0, sizeof has_bits_);
 }
 
-MmbpResponse::~MmbpResponse() noexcept {
+MmbpResponse::~MmbpResponse() noexcept {}
 
-}
-
-void MmbpResponse::SerializeTo(ChunkList& buffer) const {
-  SerializeField(status_code, buffer);
-  SerializeField(has_bits_[0], buffer);
+void MmbpResponse::SerializeTo(Buffer &buffer) const
+{
+  SerializeComponent(status_code, buffer);
+  SerializeComponent(has_bits_[0], buffer);
 
   if (HasValue()) {
-    SerializeField(value, buffer);
+    SerializeComponent(value, buffer);
   } else if (HasValues()) {
-    SerializeField(values, buffer);
+    SerializeComponent(values, buffer);
   } else if (HasKvs()) {
-    SerializeField(kvs, buffer);
+    SerializeComponent(kvs, buffer);
   } else if (HasCount()) {
-    SerializeField(count, buffer);
+    SerializeComponent(count, buffer);
   } else if (HasVmembers()) {
-    SerializeField(vmembers, buffer);
+    SerializeComponent(vmembers, buffer);
   }
 }
 
-void MmbpResponse::ParseFrom(Buffer& buffer) {
-  SetField(status_code, buffer);
-  SetField(has_bits_[0], buffer);
+void MmbpResponse::SerializeTo(ChunkList &buffer) const
+{
+  SerializeComponent(status_code, buffer);
+  SerializeComponent(has_bits_[0], buffer);
 
   if (HasValue()) {
-    SetField(value, buffer);
+    SerializeComponent(value, buffer);
   } else if (HasValues()) {
-    SetField(values, buffer);
+    SerializeComponent(values, buffer);
   } else if (HasKvs()) {
-    SetField(kvs, buffer);
+    SerializeComponent(kvs, buffer);
   } else if (HasCount()) {
-    SetField(count, buffer);
+    SerializeComponent(count, buffer);
   } else if (HasVmembers()) {
-    SetField(vmembers, buffer);
+    SerializeComponent(vmembers, buffer);
   }
 }
 
-void MmbpResponse::DebugPrint() const noexcept {
+bool MmbpResponse::ParseFrom(Buffer &buffer)
+{
+  if (!ParseComponent(status_code, buffer)) return false;
+  if (!ParseComponent(has_bits_[0], buffer)) return false;
+
+  if (HasValue()) {
+    ParseComponent(value, buffer);
+  } else if (HasValues()) {
+    ParseComponent(values, buffer);
+  } else if (HasKvs()) {
+    ParseComponent(kvs, buffer);
+  } else if (HasCount()) {
+    ParseComponent(count, buffer);
+  } else if (HasVmembers()) {
+    ParseComponent(vmembers, buffer);
+  }
+  return true;
+}
+
+void MmbpResponse::DebugPrint() const noexcept
+{
   LOG_DEBUG << "StatusCode: " << status_code;
-  LOG_DEBUG << "StatusCodeMessage: " << GetStatusMessage((StatusCode)status_code);
+  LOG_DEBUG << "StatusCodeMessage: "
+            << GetStatusMessage((StatusCode)status_code);
 
   LOG_DEBUG << "HasValue: " << HasValue();
   LOG_DEBUG << "HasValues: " << HasValues();
@@ -66,18 +89,17 @@ void MmbpResponse::DebugPrint() const noexcept {
     LOG_DEBUG << "Value: " << value;
   } else if (HasValues()) {
     LOG_DEBUG << "Value: ";
-    for (auto const& value : values)
+    for (auto const &value : values)
       LOG_DEBUG << value;
   } else if (HasKvs()) {
     LOG_DEBUG << "KeyValues: ";
-    for (auto const& kv : kvs)
+    for (auto const &kv : kvs)
       LOG_DEBUG << "<" << kv.key << ", " << kv.value << ">";
   } else if (HasCount()) {
     LOG_DEBUG << "Count: " << count;
   } else if (HasVmembers()) {
     LOG_DEBUG << "<Weight, Member>: ";
-    for (auto const& wm : vmembers)
+    for (auto const &wm : vmembers)
       LOG_DEBUG << "(" << wm.key << "," << wm.value << ")";
   }
-
 }

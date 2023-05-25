@@ -15,15 +15,15 @@ MmkvClient::MmkvClient(InetAddr const &serv_addr)
   , cli_(NewTcpClient(loop_thr_.StartRun(), serv_addr, "MmkvClient"))
   , codec_(MmbpResponse::GetPrototype())
 {
-  codec_.SetMessageCallback([this](TcpConnectionPtr const &conn,
-                                   std::unique_ptr<MmbpMessage> msg,
-                                   TimeStamp) {
-    assert(pending_requestq_.empty());
-    std::unique_ptr<MmbpResponse> response((MmbpResponse *)msg.release());
+  codec_.SetMessageCallback([this](TcpConnectionPtr const &conn, Buffer &buffer,
+                                   size_t payload_size, TimeStamp) {
+    // assert(pending_requestq_.empty());
 
+    MmbpResponse resp;
+    resp.ParseFrom(buffer);
     /* Consume the callback and value */
     auto &outstanding_call = cbq_.front();
-    outstanding_call.value.FromResponse(*response);
+    outstanding_call.value.FromResponse(resp);
     outstanding_call.cb(outstanding_call.value);
 
     cbq_.pop_front();
@@ -74,13 +74,14 @@ void MmkvClient::GetStr(String key, Callback cb)
   PrepareOutstandingCall(req, cb);
 }
 
-std::future<bool> MmkvClient::AddStr(String key, String value) 
+std::future<bool> MmkvClient::AddStr(String key, String value)
 {
   std::promise<bool> ret;
-  auto f= ret.get_future();
-  AddStr(std::move(key), std::move(value), [p = std::move(ret)](MmkvValue &v) mutable {
-    p.set_value(v.status_code() == protocol::S_OK);
-  });
+  auto f = ret.get_future();
+  AddStr(std::move(key), std::move(value),
+         [p = std::move(ret)](MmkvValue &v) mutable {
+           p.set_value(v.status_code() == protocol::S_OK);
+         });
 
   return f;
 }
@@ -92,7 +93,7 @@ std::future<String> MmkvClient::GetStr(String key)
   GetStr(std::move(key), [p = std::move(ret)](MmkvValue &v) mutable {
     p.set_value(v.ToStrValue());
   });
-  
+
   return f;
 }
 

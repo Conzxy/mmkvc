@@ -4,6 +4,7 @@ file(GLOB_RECURSE MMKVC_SRC
   protocol/*.cc
   client/*.cc
   mmkv.cc
+  ${THIRD_PARTY_DIR}/kvarint/kvarint.c
 )
 
 list(APPEND MMKV_SRC XXHASH_SRC)

@@ -1,8 +1,11 @@
+// SPDX-LICENSE-IDENTIFIER: Apache-2.0
 #ifndef _MMKV_PROTOCOL_COMMAND_H_
 #define _MMKV_PROTOCOL_COMMAND_H_
 
 #include <stdint.h>
 #include <string>
+
+#include "kanon/util/macro.h"
 
 namespace mmkv {
 namespace protocol {
@@ -83,18 +86,26 @@ enum Command : uint16_t {
   KEYALL,
   DELS,
   DELALL,
+  SHARD_JOIN,
+  SHARD_LEAVE,
   COMMAND_NUM,
 };
 
 namespace detail {
 extern std::string command_strings[];
-} // detail
+} // namespace detail
 
-inline std::string const &GetCommandString(Command cmd) {
+KANON_INLINE std::string *GetCommandStrings() KANON_NOEXCEPT
+{
+  return detail::command_strings;
+}
+
+inline std::string const &GetCommandString(Command cmd)
+{
   return detail::command_strings[cmd];
 }
 
-} // protocol
-} // mmkv
+} // namespace protocol
+} // namespace mmkv
 
 #endif // _MMKV_PROTOCOL_COMMAND_H_

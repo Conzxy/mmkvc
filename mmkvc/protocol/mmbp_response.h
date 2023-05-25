@@ -1,3 +1,4 @@
+// SPDX-LICENSE-IDENTIFIER: Apache-2.0
 #ifndef _MMKV_PROTOCOL_MMKV_RESPONSE_H_
 #define _MMKV_PROTOCOL_MMKV_RESPONSE_H_
 
@@ -15,80 +16,56 @@ class MmbpResponse : public MmbpMessage {
   MmbpResponse();
   ~MmbpResponse() noexcept override;
 
-  void SerializeTo(ChunkList& buffer) const override;
-  void ParseFrom(Buffer& buffer) override;
+  void SerializeTo(ChunkList &buffer) const override;
+  void SerializeTo(Buffer &buffer) const override;
 
-  MmbpMessage *New() const override {
-    return new MmbpResponse();
-  }
-  
-  void SetOk() {
-    status_code = S_OK;
-  }
+  bool ParseFrom(Buffer &buffer) override;
 
-  void SetValue() {
-    SetBit(has_bits_[0], 0);
-  } 
-  
-  void SetValues() {
-    SetBit(has_bits_[0], 1);
-  }
-  
-  void SetKvs() {
-    SetBit(has_bits_[0], 2);
-  }
-  
-  void SetCount() {
-    SetBit(has_bits_[0], 3);
-  }
+  MmbpMessage *New() const override { return new MmbpResponse(); }
 
-  void SetVmembers() {
-    SetBit(has_bits_[0], 4);
-  }
+  void SetOk() { status_code = S_OK; }
 
-  bool HasValue() const noexcept {
-    return TestBit(has_bits_[0], 0);
-  }
+  void SetValue() { SetBit(has_bits_[0], 0); }
 
-  bool HasValues() const noexcept {
-    return TestBit(has_bits_[0], 1);
-  }
+  void SetValues() { SetBit(has_bits_[0], 1); }
 
-  bool HasKvs() const noexcept {
-    return TestBit(has_bits_[0], 2);
-  }
-  
-  bool HasCount() const noexcept {
-    return TestBit(has_bits_[0], 3);
-  }
+  void SetKvs() { SetBit(has_bits_[0], 2); }
 
-  bool HasVmembers() const noexcept {
-    return TestBit(has_bits_[0], 4);
-  }
+  void SetCount() { SetBit(has_bits_[0], 3); }
+
+  void SetVmembers() { SetBit(has_bits_[0], 4); }
+
+  bool HasValue() const noexcept { return TestBit(has_bits_[0], 0); }
+
+  bool HasValues() const noexcept { return TestBit(has_bits_[0], 1); }
+
+  bool HasKvs() const noexcept { return TestBit(has_bits_[0], 2); }
+
+  bool HasCount() const noexcept { return TestBit(has_bits_[0], 3); }
+
+  bool HasVmembers() const noexcept { return TestBit(has_bits_[0], 4); }
 
   void DebugPrint() const noexcept;
 
-  static MmbpResponse* GetPrototype() noexcept {
-    return &prototype_;
-  }
-    
+  static MmbpResponse *GetPrototype() noexcept { return &prototype_; }
+
  private:
   static MmbpResponse prototype_;
 
   uint8_t has_bits_[1];
-  
+
  public:
-  uint8_t status_code; // required
+  uint8_t      status_code; // required
   // value or content
   // required
-  uint64_t count;
-  String value;
-  StrValues values;
-  StrKvs kvs;
+  uint64_t     count;
+  String       value;
+  StrValues    values;
+  StrKvs       kvs;
   WeightValues vmembers;
 };
 
-} // protocol
-} // mmkv
+} // namespace protocol
+} // namespace mmkv
 
 #endif // _MMKV_PROTOCOL_MMKV_RESPONSE_H_

@@ -1,12 +1,14 @@
+// SPDX-LICENSE-IDENTIFIER: Apache-2.0
 #ifndef _MMKV_PROTOCOL_MMBP_CODEC_H_
 #define _MMKV_PROTOCOL_MMBP_CODEC_H_
 
-#include "kanon/net/connection/tcp_connection.h"
+#include "kanon/net/callback.h"
+#include "kanon/net/user_common.h"
 #include "kanon/util/noncopyable.h"
 
 #include "mmbp_request.h"
 #include "mmbp_response.h"
-#include "mmbp.h"
+#include "mmkvc/protocol/mmbp.h"
 
 namespace mmkv {
 namespace protocol {
@@ -22,54 +24,57 @@ class MmbpCodec {
     E_INVALID_MESSAGE,
     E_NO_COMPLETE_MESSAGE, // This is not a error, just indicator
   };
- private:
-
-  using MessageCallback = std::function<void(TcpConnectionPtr const&, std::unique_ptr<MmbpMessage>, TimeStamp)>;
-  using ErrorCallback = std::function<void(TcpConnectionPtr const&, ErrorCode)>;
 
   using SizeHeaderType = uint32_t;
   using CheckSumType = uint32_t;
 
-  static constexpr uint8_t SIZE_LENGTH = sizeof(SizeHeaderType);
-  static constexpr uint8_t CHECKSUM_LENGTH = sizeof(CheckSumType);
-  static constexpr uint32_t MAX_SIZE = 1 << 26; // 64MB
-  static char const MMBP_TAG[];
-  static uint8_t MMBP_TAG_SIZE;
+ private:
+  // using MessageCallback = std::function<void(TcpConnectionPtr const&,
+  // std::unique_ptr<MmbpMessage>, TimeStamp)>;
+  using MessageCallback = std::function<void(TcpConnectionPtr const &, Buffer &,
+                                             uint32_t, TimeStamp)>;
+  using ErrorCallback =
+      std::function<void(TcpConnectionPtr const &, ErrorCode)>;
 
  public:
-  MmbpCodec(MmbpMessage* prototype);
-  
-  void SetUpConnection(TcpConnectionPtr const& conn);
+  explicit MmbpCodec(MmbpMessage *prototype);
+  MmbpCodec(MmbpMessage *prototype, TcpConnectionPtr const &conn);
 
-  void SetMessageCallback(MessageCallback cb) {
-    message_cb_ = std::move(cb);
+  MmbpCodec(MmbpCodec &&) = default;
+
+  void SetUpConnection(TcpConnectionPtr const &conn);
+
+  void SetMessageCallback(MessageCallback cb) { message_cb_ = std::move(cb); }
+
+  void SetErrorCallback(ErrorCallback cb) { error_cb_ = std::move(cb); }
+
+  void Send(TcpConnectionPtr const &conn, MmbpMessage const *message)
+  {
+    Send(conn.get(), message);
   }
-  
-  void SetErrorCallback(ErrorCallback cb) {
-    error_cb_ = std::move(cb);
-  }
+  void Send(TcpConnection *conn, MmbpMessage const *message);
 
-  void Send(TcpConnectionPtr const& conn, MmbpMessage const* message);
-  void Send(TcpConnection* conn, MmbpMessage const* message);
+  /* Deprecated
+   * In the old version, this is a implementation detail of message callback of
+   * connection. Now, just for debugging and test. Don't call this in mmkv.
+   */
+  ErrorCode Parse(Buffer &buffer, MmbpMessage *message);
+  void SerializeTo(MmbpMessage const *message, OutputBuffer &buffer);
 
-  ErrorCode Parse(Buffer& buffer, MmbpMessage*& message);
-  void SerializeTo(MmbpMessage const* message, OutputBuffer& buffer);
-
-  static char const* GetErrorString(ErrorCode code) noexcept;
+  static char const *GetErrorString(ErrorCode code) noexcept;
 
  private:
-  void OnMessage(TcpConnectionPtr const& conn, Buffer& buffer, TimeStamp recv_time);
-
-  static bool VerifyCheckSum(Buffer& buffer, SizeHeaderType size_header);
-  static void ErrorHandle(TcpConnectionPtr const& conn, ErrorCode code);
+  static bool VerifyCheckSum(Buffer &buffer, SizeHeaderType size_header);
 
   // Member data:
-  MmbpMessage* prototype_;
+  MmbpMessage *prototype_;
   MessageCallback message_cb_;
   ErrorCallback error_cb_;
+
+  // static void(* raw_request_cb_)(void const*, size_t);
 };
 
-} // protocol
-} // mmkv
+} // namespace protocol
+} // namespace mmkv
 
 #endif // _MMKV_PROTOCOL_MMBP_CODEC_H_
