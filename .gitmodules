@@ -4,3 +4,6 @@
 [submodule "third-party/kanon"]
 	path = third-party/kanon
 	url = https://github.com/Conzxy/kanon
+[submodule "third-party/kvarint"]
+	path = third-party/kvarint
+	url = https://github.com/Conzxy/kvarint
