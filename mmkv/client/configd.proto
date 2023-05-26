@@ -1,0 +1,22 @@
+syntax = "proto2";
+
+import "configuration.proto";
+
+package mmkv;
+
+enum ConfigOperation {
+  CONF_OP_FETCH = 0;
+}
+
+message ConfigRequest { required ConfigOperation operation = 1; }
+
+enum ConfigStatusCode {
+  CONF_STATUS_OK   = 0;
+  CONF_INVALID_REQ = 1;
+}
+
+message ConfigResponse
+{
+  required ConfigStatusCode status = 1;
+  optional Configuration    conf   = 2;
+}
