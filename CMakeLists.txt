@@ -3,6 +3,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 project(mmkvc)
 
+include(cmake/proto_util.cmake)
+
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -101,5 +103,5 @@ message(STATUS "BUILD_ALL_TESTS = ${BUILD_ALL_TESTS}")
 message(STATUS "BUILD_ALL_EXAMPLES = ${BUILD_ALL_EXAMPLES}")
 
 add_subdirectory(${THIRD_PARTY_DIR})
-add_subdirectory(mmkvc)
+add_subdirectory(mmkv)
 add_subdirectory(test)
